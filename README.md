@@ -27,6 +27,13 @@ A Plug A/B test framework aiming to be fast, reliable and scalable. This is a wo
 Create the experiments config: *(Currently this is only a placeholder to keep the config in some place. The idea is to move this to a proper DB storage with a web interface to create/edit experiments)*
 
 ```elixir
+# Redis dependency
+config :abex, :redix,
+  host: "127.0.0.1",
+  password: nil,
+  size: 10,
+  max_overflow: 5
+
 config :abex, :experiments,
   active: %{
     "signup_button_color" => %{
