@@ -3,13 +3,13 @@ defmodule Abex.Experiment do
   alias Plug.Conn.Unfetched
   alias Abex.DB
 
-	def seed!(conn) do
+  def seed!(conn) do
     cookies = get_conn_cookies(conn)
-		case Map.fetch(cookies, "user_seed") do
+    case Map.fetch(cookies, "user_seed") do
       {:ok, _user_seed} -> conn
       :error -> create_seed(conn)
-		end
-	end
+    end
+  end
 
   def get_variant(conn, experiment_tag) do
     experiments = conn |> running_experiments
