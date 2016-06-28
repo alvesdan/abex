@@ -15,3 +15,10 @@ config :abex, :experiments,
       variants: 3
     }
   }
+
+config :abex, :goals,
+  active: %{
+    "test_goal" => %{
+      type: :normal
+    }
+  }

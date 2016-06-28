@@ -5,11 +5,7 @@ defmodule Abex.ExperimentTest do
   alias Abex.{Experiment, DB}
 
   setup do
-    DB.force_delete!("test_experiment|0")
-    DB.force_delete!("test_experiment|1")
-    DB.force_delete!("three_variants_experiment|0")
-    DB.force_delete!("three_variants_experiment|1")
-    DB.force_delete!("three_variants_experiment|2")
+    DB.delete_all!
     :ok
   end
 
@@ -85,5 +81,19 @@ defmodule Abex.ExperimentTest do
       |> Experiment.track_experiment("test_experiment")
 
     assert Abex.Experiment.get_variant(conn, "test_experiment") == 0
+  end
+
+  test "it tracks goal for running experiments" do
+    conn =
+      fresh_conn
+      |> Experiment.seed!
+      |> Experiment.track_experiment("test_experiment")
+      |> Experiment.track_experiment("three_variants_experiment")
+      |> Experiment.track_goal("test_goal")
+
+    experiments = Experiment.running_experiments(conn)
+
+    assert experiments["test_experiment"]["goals"] == ["test_goal"]
+    assert experiments["three_variants_experiment"]["goals"] == ["test_goal"]
   end
 end

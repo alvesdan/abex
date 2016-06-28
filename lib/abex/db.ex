@@ -1,5 +1,6 @@
 defmodule Abex.DB do
   use Supervisor
+  require Logger
   @redis_config Application.get_env(:abex, :redix)
 
 	def start_link do
@@ -28,20 +29,42 @@ defmodule Abex.DB do
     update_seed(user_seed, experiment_tag, variant)
   end
 
+  def persist_goal(user_seed, goal) do
+    update_seed(user_seed, goal)
+  end
+
   def create_seed(user_seed) do
     set(user_seed, Poison.encode!(%{}))
   end
 
-  def update_seed(user_seed, experiment_tag, variant) do
-    current_seed = 
-      case get(user_seed) do
-        {:ok, nil} -> %{}
-        {:ok, seed} -> Poison.decode!(seed)
-      end
+  def current_seed(user_seed) do
+    case get(user_seed) do
+      {:ok, nil} -> %{}
+      {:ok, seed} -> Poison.decode!(seed)
+    end
+  end
 
+  def update_seed(user_seed, experiment_tag, variant) do
     updated =
-      current_seed
+      current_seed(user_seed)
       |> Map.put(experiment_tag, %{"variant" => variant})
+      |> Poison.encode!
+
+    set(user_seed, updated)
+  end
+
+  def update_seed(user_seed, goal) do
+    updated =
+      current_seed(user_seed)
+      |> Enum.reduce(%{}, fn({key, value}, acc) ->
+        goals =
+          case Map.fetch(value, "goals") do
+            {:ok, goals} -> Enum.uniq(goals ++ [goal])
+            _ -> [goal]
+          end
+
+        Map.put(acc, key, Map.put(value, "goals", goals))
+      end)
       |> Poison.encode!
 
     set(user_seed, updated)
@@ -63,8 +86,13 @@ defmodule Abex.DB do
     command(["GET", key])
   end
 
-  def force_delete!(key) do
-    command(["DEL", key])
+  def delete_all_and_warn! do
+    Logger.warn "Flusing Redis database!"
+    delete_all!
+  end
+
+  def delete_all! do
+    command(["FLUSHDB"])
   end
 
   defp add(key, value) do

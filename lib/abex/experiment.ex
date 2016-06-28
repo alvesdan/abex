@@ -32,7 +32,15 @@ defmodule Abex.Experiment do
 
     experiments = running_experiments(conn)
     user_seed = get_user_seed(conn)
+    if !user_seed, do: raise("Ops, cannot track experiment without seed")
     conn |> put_experiment(user_seed, experiments, experiment_tag)
+  end
+
+  def track_goal(conn, goal) do
+    user_seed = conn |> get_user_seed
+    if !user_seed, do: raise("Ops, cannot track goal without seed")
+    DB.persist_goal(user_seed, goal)
+    conn
   end
 
   def get_user_seed(conn) do
@@ -42,7 +50,7 @@ defmodule Abex.Experiment do
 
   def running_experiments(conn) do
     user_seed = conn |> get_user_seed
-    if !user_seed, do: raise("Ops, trying to fetch experiments without seed")
+    if !user_seed, do: raise("Ops, cannot fetch experiments without seed")
 
     case DB.get(user_seed) do
       {:ok, nil} -> %{}
