@@ -34,8 +34,8 @@ defmodule Abex.DB do
     update_seed(user_seed, goal)
   end
 
-  def create_seed(user_seed) do
-    set_seed(user_seed, Poison.encode!(%{}))
+  def create_seed(user_seed, %{extend: extend}) do
+    set_seed(user_seed, Poison.encode!(%{extend: extend}))
   end
 
   def current_seed(user_seed) do
@@ -72,21 +72,17 @@ defmodule Abex.DB do
   end
 
   def count_variant(experiment_tag, variant) do
-    key = ["experiment", experiment_tag, to_string(variant)]
+    key = ["experiment", experiment_tag, to_string(variant), "count"]
       |> Enum.join(@variant_separator)
 
-    case command(["SCARD", key]) do
-      {:ok, count} -> count
+    case command(["GET", key]) do
+      {:ok, nil} -> 1
+      {:ok, count} -> String.to_integer(count)
       _ -> nil
     end
   end
 
-  def delete_all_and_warn! do
-    Logger.warn "Flusing Redis database!"
-    delete_all!
-  end
-
-  def delete_all! do
+  def flush! do
     if Mix.env == :prod, do: raise("Cannot flush Redis database in production!")
     command(["FLUSHDB"])
   end
@@ -101,6 +97,7 @@ defmodule Abex.DB do
       |> Enum.join(@variant_separator)
 
     command(["SADD", key, user_seed])
+    command(["INCR", key <> @variant_separator <> "count"])
   end
 
   defp set_seed(user_seed, value) do

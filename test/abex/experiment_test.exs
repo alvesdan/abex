@@ -5,7 +5,7 @@ defmodule Abex.ExperimentTest do
   alias Abex.{Experiment, DB}
 
   setup do
-    DB.delete_all!
+    DB.flush!
     :ok
   end
 
@@ -44,9 +44,8 @@ defmodule Abex.ExperimentTest do
     assert experiments["test_experiment"]["variant"]
   end
   
-  # Still have to fix this, failling some times
   test "it splits the users on variants" do
-    Enum.reduce((1..90), [], fn(_n, tasks) ->
+    Enum.reduce(1..90, [], fn(_n, tasks) ->
       Process.sleep(1)
       tasks ++ [Task.async(fn ->
         fresh_conn
@@ -95,5 +94,16 @@ defmodule Abex.ExperimentTest do
 
     assert experiments["test_experiment"]["goals"] == ["test_goal"]
     assert experiments["three_variants_experiment"]["goals"] == ["test_goal"]
+  end
+
+  test "it extends the user seed" do
+    seed =
+      fresh_conn
+      |> Experiment.seed!(TestSeedExtension)
+      |> Experiment.get_user_seed
+      |> DB.current_seed
+
+    assert seed["extend"]
+    assert seed["extend"]["email"] == "example@email.com"
   end
 end

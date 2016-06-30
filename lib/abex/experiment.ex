@@ -3,11 +3,11 @@ defmodule Abex.Experiment do
   alias Plug.Conn.Unfetched
   alias Abex.DB
 
-  def seed!(conn) do
+  def seed!(conn, extend_seed \\ nil) do
     cookies = get_conn_cookies(conn)
     case Map.fetch(cookies, "user_seed") do
       {:ok, _user_seed} -> conn
-      :error -> create_seed(conn)
+      :error -> create_seed(conn, extend_seed)
     end
   end
 
@@ -54,13 +54,15 @@ defmodule Abex.Experiment do
     DB.current_seed(user_seed)
   end
 
-  defp create_seed(conn) do
+  defp create_seed(conn, extend_seed) do
     timestamp = Tuple.to_list(:os.timestamp) |> Enum.map(&to_string/1)
     user_seed =
         :crypto.hash(:sha256, timestamp)
         |> Base.encode64
 
-    DB.create_seed(user_seed)
+    extension =
+      if extend_seed, do: extend_seed.call(conn), else: %{}
+    DB.create_seed(user_seed, %{extend: extension})
     conn |> Plug.Conn.put_resp_cookie("user_seed", user_seed)
   end
 
