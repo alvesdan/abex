@@ -2,6 +2,8 @@ defmodule Abex.DB do
   use Supervisor
   require Logger
   @redis_config Application.get_env(:abex, :redix)
+  @variant_separator ":"
+  @seed_separator ":"
 
 	def start_link do
     Supervisor.start_link(__MODULE__, [])
@@ -24,8 +26,7 @@ defmodule Abex.DB do
   end
 
   def persist_experiment(user_seed, experiment_tag, variant) do
-    key = experiment_tag <> "|" <> to_string(variant)
-    add(key, user_seed)
+    add_experiment(user_seed, experiment_tag, variant)
     update_seed(user_seed, experiment_tag, variant)
   end
 
@@ -34,11 +35,11 @@ defmodule Abex.DB do
   end
 
   def create_seed(user_seed) do
-    set(user_seed, Poison.encode!(%{}))
+    set_seed(user_seed, Poison.encode!(%{}))
   end
 
   def current_seed(user_seed) do
-    case get(user_seed) do
+    case get_seed(user_seed) do
       {:ok, nil} -> %{}
       {:ok, seed} -> Poison.decode!(seed)
     end
@@ -50,7 +51,7 @@ defmodule Abex.DB do
       |> Map.put(experiment_tag, %{"variant" => variant})
       |> Poison.encode!
 
-    set(user_seed, updated)
+    set_seed(user_seed, updated)
   end
 
   def update_seed(user_seed, goal) do
@@ -67,23 +68,17 @@ defmodule Abex.DB do
       end)
       |> Poison.encode!
 
-    set(user_seed, updated)
+    set_seed(user_seed, updated)
   end
 
   def count_variant(experiment_tag, variant) do
-    key = experiment_tag <> "|" <> to_string(variant)
+    key = ["experiment", experiment_tag, to_string(variant)]
+      |> Enum.join(@variant_separator)
+
     case command(["SCARD", key]) do
       {:ok, count} -> count
       _ -> nil
     end
-  end
-
-  def set(key, value) do
-    command(["SET", key, value])
-  end
-
-  def get(key) do
-    command(["GET", key])
   end
 
   def delete_all_and_warn! do
@@ -92,14 +87,28 @@ defmodule Abex.DB do
   end
 
   def delete_all! do
+    if Mix.env == :prod, do: raise("Cannot flush Redis database in production!")
     command(["FLUSHDB"])
   end
 
-  defp add(key, value) do
-    command(["SADD", key, value])
+  defp get_seed(user_seed) do
+    key = "user_seed" <> @seed_separator <> user_seed
+    command(["GET", key])
   end
 
-	defp command(command) do
+  defp add_experiment(user_seed, experiment_tag, variant) do
+    key = ["experiment", experiment_tag, to_string(variant)]
+      |> Enum.join(@variant_separator)
+
+    command(["SADD", key, user_seed])
+  end
+
+  defp set_seed(user_seed, value) do
+    key = "user_seed" <> @seed_separator <> user_seed
+    command(["SET", key, value])
+  end
+
+	def command(command) do
     :poolboy.transaction(:abex_poolboy, &Redix.command(&1, command))
   end
 end
