@@ -35,12 +35,12 @@ defmodule Abex.DB do
   end
 
   def create_seed(user_seed, %{extend: extend}) do
-    set_seed(user_seed, Poison.encode!(%{extend: extend}))
+    set_seed(user_seed, Poison.encode!(%{extend: extend, experiments: %{}}))
   end
 
   def current_seed(user_seed) do
     case get_seed(user_seed) do
-      {:ok, nil} -> %{}
+      {:ok, nil} -> %{"experiments" => %{}}
       {:ok, seed} -> Poison.decode!(seed)
     end
   end
@@ -48,24 +48,21 @@ defmodule Abex.DB do
   def update_seed(user_seed, experiment_tag, variant) do
     updated =
       current_seed(user_seed)
-      |> Map.put(experiment_tag, %{"variant" => variant})
+      |> put_in(["experiments", experiment_tag], %{"variant" => variant, "stage" => [0]})
       |> Poison.encode!
 
     set_seed(user_seed, updated)
   end
 
   def update_seed(user_seed, goal) do
-    updated =
-      current_seed(user_seed)
-      |> Enum.reduce(%{}, fn({key, value}, acc) ->
-        goals =
-          case Map.fetch(value, "goals") do
-            {:ok, goals} -> Enum.uniq(goals ++ [goal])
-            _ -> [goal]
-          end
+    merged =
+      case Map.fetch(current_seed(user_seed), "goals") do
+        {:ok, goals} -> Enum.uniq(goals ++ [goal])
+        _ -> [goal]
+      end
 
-        Map.put(acc, key, Map.put(value, "goals", goals))
-      end)
+    updated =
+      Map.put(current_seed(user_seed), "goals", merged)
       |> Poison.encode!
 
     set_seed(user_seed, updated)

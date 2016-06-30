@@ -90,10 +90,8 @@ defmodule Abex.ExperimentTest do
       |> Experiment.track_experiment("three_variants_experiment")
       |> Experiment.track_goal("test_goal")
 
-    experiments = Experiment.running_experiments(conn)
-
-    assert experiments["test_experiment"]["goals"] == ["test_goal"]
-    assert experiments["three_variants_experiment"]["goals"] == ["test_goal"]
+    seed = Experiment.get_user_seed(conn) |> DB.current_seed
+    assert seed["goals"] == ["test_goal"]
   end
 
   test "it extends the user seed" do

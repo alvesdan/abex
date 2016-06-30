@@ -51,7 +51,7 @@ defmodule Abex.Experiment do
   def running_experiments(conn) do
     user_seed = conn |> get_user_seed
     if !user_seed, do: raise("WARN! Cannot fetch experiments without seed")
-    DB.current_seed(user_seed)
+    DB.current_seed(user_seed) |> Map.get("experiments", %{})
   end
 
   defp create_seed(conn, extend_seed) do
