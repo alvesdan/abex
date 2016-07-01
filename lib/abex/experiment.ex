@@ -12,19 +12,16 @@ defmodule Abex.Experiment do
   end
 
   def get_variant(conn, experiment_tag) do
-    experiments = conn |> running_experiments
-
-    with {:ok, experiment} <- Map.fetch(experiments, experiment_tag),
-         {:ok, variant} <- Map.fetch(experiment, "variant"),
-         do: variant
+    conn
+      |> running_experiments
+      |> get_in([experiment_tag, "variant"])
   end
 
   def track_experiment!(conn, experiment_tag) do
     conn
       |> track_experiment(experiment_tag)
       |> running_experiments
-      |> Map.fetch!(experiment_tag)
-      |> Map.fetch!("variant")
+      |> get_in([experiment_tag, "variant"])
   end
 
   def track_experiment(conn, experiment_tag)
@@ -57,8 +54,8 @@ defmodule Abex.Experiment do
   defp create_seed(conn, extend_seed) do
     timestamp = Tuple.to_list(:os.timestamp) |> Enum.map(&to_string/1)
     user_seed =
-        :crypto.hash(:sha256, timestamp)
-        |> Base.encode64
+      :crypto.hash(:sha256, timestamp)
+      |> Base.encode64
 
     extension =
       if extend_seed, do: extend_seed.call(conn), else: %{}
@@ -68,9 +65,7 @@ defmodule Abex.Experiment do
 
   defp put_experiment(conn, user_seed, experiments, experiment_tag) do
     existing_variant =
-      with {:ok, experiment} <- Map.fetch(experiments, experiment_tag),
-           {:ok, variant} <- Map.fetch(experiment, "variant"),
-           do: {:ok, variant}
+      experiments |> get_in([experiment_tag, "variant"])
 
     case existing_variant do
       {:ok, _variant} -> conn
