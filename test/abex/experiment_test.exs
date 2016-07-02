@@ -94,6 +94,17 @@ defmodule Abex.ExperimentTest do
     assert seed["goals"] == ["test_goal"]
   end
 
+  test "it counts users on experiment/variant/goal" do
+    fresh_conn
+      |> Experiment.seed!
+      |> Experiment.track_experiment("test_experiment")
+      |> Experiment.track_experiment("three_variants_experiment")
+      |> Experiment.track_goal("test_goal")
+
+    assert DB.count_goal("test_experiment", 0, "test_goal") == 1
+    assert DB.count_goal("three_variants_experiment", 0, "test_goal") == 1
+  end
+
   test "it extends the user seed" do
     seed =
       fresh_conn

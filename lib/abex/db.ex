@@ -65,6 +65,7 @@ defmodule Abex.DB do
       Map.put(current_seed(user_seed), "goals", merged)
       |> Poison.encode!
 
+    set_experiments_goal(user_seed, goal)
     set_seed(user_seed, updated)
   end
 
@@ -73,7 +74,18 @@ defmodule Abex.DB do
       |> Enum.join(@variant_separator)
 
     case command(["GET", key]) do
-      {:ok, nil} -> 1
+      {:ok, nil} -> 0
+      {:ok, count} -> String.to_integer(count)
+      _ -> nil
+    end
+  end
+
+  def count_goal(experiment_tag, variant, goal) do
+    key = ["experiment", experiment_tag, to_string(variant), goal, "count"]
+      |> Enum.join(@variant_separator)
+
+    case command(["GET", key]) do
+      {:ok, nil} -> 0
       {:ok, count} -> String.to_integer(count)
       _ -> nil
     end
@@ -100,6 +112,16 @@ defmodule Abex.DB do
   defp set_seed(user_seed, value) do
     key = "user_seed" <> @seed_separator <> user_seed
     command(["SET", key, value])
+  end
+
+  defp set_experiments_goal(user_seed, goal) do
+    current_seed(user_seed)
+      |> Map.get("experiments", %{})
+      |> Enum.each(fn({tag, content}) ->
+        key = ["experiment", tag, to_string(content["variant"]), goal, "count"]
+          |> Enum.join(@variant_separator)
+        command(["INCR", key])
+      end)
   end
 
 	def command(command) do
