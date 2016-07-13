@@ -1,10 +1,11 @@
 defmodule Abex.ExperimentTest do
-  use ExUnit.Case
+  use Abex.ConnCase
   doctest Abex.Experiment
   alias Plug.Conn
   alias Abex.{Experiment, DB}
 
   setup do
+    TestHelper.create_test_experiments!
     DB.flush!
     :ok
   end
@@ -45,16 +46,12 @@ defmodule Abex.ExperimentTest do
   end
   
   test "it splits the users on variants" do
-    Enum.reduce(1..90, [], fn(_n, tasks) ->
-      Process.sleep(1)
-      tasks ++ [Task.async(fn ->
-        fresh_conn
-        |> Experiment.seed!
-        |> Experiment.track_experiment("test_experiment")
-        |> Experiment.track_experiment("three_variants_experiment")
-
-      end)]
-    end) |> Enum.map(&Task.await/1)
+    Enum.each(1..90, fn(_n) ->
+      fresh_conn
+      |> Experiment.seed!
+      |> Experiment.track_experiment("test_experiment")
+      |> Experiment.track_experiment("three_variants_experiment")
+    end)
 
     test_experiment = Enum.map([0, 1], fn(n) -> DB.count_variant("test_experiment", n) end)
     three_variants_experiment = Enum.map([0, 1], fn(n) ->

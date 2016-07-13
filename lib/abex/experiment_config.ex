@@ -1,10 +1,11 @@
 defmodule Abex.ExperimentConfig do
-  @experiments_config Application.get_env(:abex, :experiments)
+  alias Abex.Repo
+  alias Abex.Schema.Experiment
 
   def experiment_variants(experiment_tag) do
-    case Map.fetch(@experiments_config[:active], experiment_tag) do
-      {:ok, experiment} -> experiment.variants
-      :error -> nil
+    case Repo.get_by(Experiment, tag: experiment_tag) do
+      nil -> nil
+      experiment -> experiment.variants
     end
   end
 end

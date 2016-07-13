@@ -1,5 +1,6 @@
 defmodule Abex do
   use Application
+  alias Abex.Router
 
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
   # for more information on OTP Applications
@@ -9,7 +10,9 @@ defmodule Abex do
     children = [
       # Define workers and child supervisors to be supervised
       # worker(Extranslate.Worker, [arg1, arg2, arg3]),
+      supervisor(Abex.Repo, []),
       supervisor(Abex.DB, []),
+      Plug.Adapters.Cowboy.child_spec(:http, Router, [], [port: 4001])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
