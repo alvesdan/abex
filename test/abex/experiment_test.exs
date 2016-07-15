@@ -14,24 +14,24 @@ defmodule Abex.ExperimentTest do
     Plug.Adapters.Test.Conn.conn(%Conn{}, :get, "/abex", nil)
   end
 
-	test "it creates an experiment seed" do
-		user_seed =
+  test "it creates an experiment seed" do
+    user_seed =
       fresh_conn
       |> Experiment.seed!
       |> Experiment.get_user_seed
 
     assert user_seed
-	end
+  end
 
   test "it does not change the seed if called again" do
-		conn = fresh_conn |> Experiment.seed!
+    conn = fresh_conn |> Experiment.seed!
     user_seed = Experiment.get_user_seed(conn)
 
     updated =
       conn
       |> Experiment.seed!
       |> Experiment.get_user_seed
-    
+
     assert updated == user_seed
   end
   
