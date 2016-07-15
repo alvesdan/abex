@@ -6,7 +6,7 @@ defmodule Abex.Repo.Migrations.CreateExperiments do
       add :tag, :string
       add :status, :integer, default: 0
       add :started_at, :datetime
-      add :variants, :integer, default: 1
+      add :variants, :integer, default: 2
     end
 
     create unique_index(:experiments, [:tag])
