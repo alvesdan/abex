@@ -1,0 +1,20 @@
+<div class="page-header">
+  <h1>Experiments</h1>
+</div>
+
+<p>
+  <a href="<%= Abex.View.url_for("abex/experiments/new") %>">
+    New experiment</a></p>
+
+<table>
+  <%= for experiment <- experiments do %>
+    <tr>
+      <td><%= experiment.tag %></td>
+      <td>
+        <a href="<%= Abex.View.url_for("abex/experiments/#{experiment.id}") %>">
+          Edit</a>
+      </td>
+    </tr>
+  <% end %>
+</table>
+

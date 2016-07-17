@@ -1,0 +1,2 @@
+<%= Abex.View.render_template "experiments/_form.html.eex",
+  [experiment: experiment, errors: errors] %>

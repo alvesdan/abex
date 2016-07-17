@@ -20,6 +20,7 @@ defmodule Abex.ConnCase do
       alias Abex.Repo
       import Ecto.Model
       import Ecto.Query, only: [from: 2]
+      import TestHelper, only: [get: 2, post: 3]
     end
   end
 

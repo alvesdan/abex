@@ -1,0 +1,34 @@
+<%= if errors do %>
+  <%= for {tag, msg} <- errors do %>
+    <p><%= tag %>, <%= Abex.View.parse_error_message(msg) %></p>
+  <% end %>
+<% end %>
+
+<form
+  action="/abex/experiments<%= if Map.fetch!(experiment, :id),
+    do: "/#{experiment.id}", else: "" %>"
+  method="post">
+
+  <p>Experiment tag:
+    <input type="text"
+      name="experiment[tag]"
+      value="<%= experiment.tag %>">
+  </p>
+
+  <p>Variants:
+    <input type="number"
+      name="experiment[variants]"
+      value="<%= experiment.variants %>">
+  </p>
+
+  <p>Start date:
+    <input type="text"
+      name="experiment[started_at]"
+      value="<%= experiment.variants %>">
+  </p>
+
+  <p>
+    <input type="submit" value="Submit" />
+    or <a href="<%= Abex.View.url_for("abex/experiments") %>">cancel</a>
+  </p>
+</form>
