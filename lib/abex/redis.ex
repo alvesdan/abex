@@ -26,8 +26,8 @@ defmodule Abex.Redis do
   def set(key, value) do
     case command(["SET", key, value]) do
       {:ok, "OK"} -> :ok
-      {:error, _error} ->
-        Logger.warn("Failed to store Redis key #{key}")
+      {:error, error} ->
+        Logger.warn("Failed to store Redis key #{key} with error: #{error}")
         :error
     end
   end

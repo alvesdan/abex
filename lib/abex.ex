@@ -10,7 +10,8 @@ defmodule Abex do
     children = [
       # Starts a worker by calling: Abex.Worker.start_link(arg1, arg2, arg3)
       # worker(Abex.Worker, [arg1, arg2, arg3]),
-      supervisor(Abex.Redis, [])
+      supervisor(Abex.Redis, []),
+      supervisor(Abex.Repo, [])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

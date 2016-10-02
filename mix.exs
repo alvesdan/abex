@@ -18,7 +18,7 @@ defmodule Abex.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :redix],
+    [applications: [:logger, :redix, :postgrex, :ecto],
      mod: {Abex, []}]
   end
 
@@ -36,6 +36,8 @@ defmodule Abex.Mixfile do
      {:uuid, "~> 1.1" },
      {:redix, "~> 0.3"},
      {:poolboy, ">= 0.0.0"},
-     {:poison, "~> 2.0"}]
+     {:poison, "~> 2.0"},
+     {:postgrex, ">= 0.0.0"},
+     {:ecto, "~> 2.0.0"}]
   end
 end
