@@ -4,14 +4,14 @@ defmodule Abex.Experiment do
   defstruct [
     id: nil,
     tag: nil,
-    variants: 2,
+    variants: [0, 1],
     status: :created
   ]
 
   @type t :: %__MODULE__{
     id: integer,
     tag: binary,
-    variants: integer,
+    variants: list,
     status: atom
   }
 

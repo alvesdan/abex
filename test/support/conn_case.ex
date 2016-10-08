@@ -19,17 +19,21 @@ defmodule ConnCase do
     @started_at Ecto.DateTime.cast!("2016-01-01 00:00:00")
     def create_test_experiments(started_at \\ nil) do
       date = started_at || @started_at
-      %Abex.Schema.Experiment{
-        tag: "two_variants_experiment",
-        started_at: date, variants: 2, status: 1, description: "Test" }
-        |> Abex.Repo.insert
 
-      %Abex.Schema.Experiment{
-        tag: "three_variants_experiment",
-        started_at: date, variants: 3, status: 1, description: "Test" }
-        |> Abex.Repo.insert
+      {:ok, two_variants} =
+        %Abex.Schema.Experiment{
+          tag: "two_variants_experiment",
+          started_at: date, variants: 2, status: 1, description: "Test"
+        } |> Abex.Repo.insert
 
-      :ok
+      {:ok, three_variants} =
+        %Abex.Schema.Experiment{
+          tag: "three_variants_experiment",
+          started_at: date, variants: 3, status: 1, description: "Test"
+        } |> Abex.Repo.insert
+
+      {:ok, [two_variants_experiment: two_variants,
+             three_variants_experiment: three_variants]}
     end
   end
 

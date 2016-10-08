@@ -14,6 +14,11 @@ defmodule Abex.Seed do
     }
   end
 
+  @spec update(t, map) :: t
+  def update(seed, params) do
+    Map.merge(seed, params)
+  end
+
   @spec store(t) :: :ok | :error
   def store(%__MODULE__{} = seed) do
     Abex.Redis.set(seed.key, Poison.encode!(seed))

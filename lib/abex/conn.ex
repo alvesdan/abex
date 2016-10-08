@@ -40,9 +40,24 @@ defmodule Abex.Conn do
     put_private(conn, :abex_seed, seed)
   end
 
+  @spec load_experiments_from_seed(Conn.t, Abex.Seed.t) :: Conn.t
+  def load_experiments_from_seed(conn, seed) do
+    put_private(conn, :abex_experiments, seed.experiments)
+  end
+
   @spec get_seed(Conn.t) :: Conn.t
   def get_seed(conn) do
     conn.private[:abex_seed]
+  end
+
+  @spec get_experiments(Conn.t) :: map
+  def get_experiments(conn) do
+    conn.private[:abex_experiments] || %{}
+  end
+
+  @spec get_tracked_experiments(Conn.t) :: map
+  def get_tracked_experiments(conn) do
+    conn.private[:abex_tracked_experiments] || %{}
   end
 
   @doc """
@@ -52,7 +67,11 @@ defmodule Abex.Conn do
   @spec set_before_send(Conn.t) :: Conn.t
   def set_before_send(conn) do
     register_before_send(conn, fn(conn) ->
-      conn |> get_seed |> Abex.Seed.store
+      conn
+      |> get_seed
+      |> Abex.Seed.update(%{experiments: get_experiments(conn)})
+      |> Abex.Seed.store
+
       conn
     end)
   end

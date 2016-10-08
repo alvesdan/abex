@@ -52,4 +52,24 @@ defmodule Abex.APITest do
 
     assert Abex.Conn.get_seed(conn) == seed
   end
+
+  describe "Abex.API.track_experiment/2" do
+    setup do
+      create_test_experiments
+    end
+
+    test "it tracks experiment and returns conn", context do
+      experiment = context[:two_variants_experiment]
+
+      conn =
+        fresh_conn
+        |> Abex.API.track_experiment(experiment.tag)
+
+      assert conn.private[:abex_experiments]
+      tracked = conn.private[:abex_experiments][experiment.id]
+
+      assert tracked[:variant]
+      assert tracked[:tracked_at]
+    end
+  end
 end

@@ -19,6 +19,18 @@ defmodule Abex.API do
     conn
     |> Conn.set_seed_key(seed.key)
     |> Conn.set_seed(seed)
+    |> Conn.load_experiments_from_seed(seed)
     |> Conn.set_before_send
+  end
+
+  @spec track_experiment(Conn.t, binary) :: Conn.t
+  def track_experiment(conn, experiment_tag) do
+    Abex.Experiment.retrieve(experiment_tag)
+    |> Abex.Tracker.experiment_tracked?(conn)
+    |> case do
+      :tracked -> conn
+      {:not_tracked, experiment} ->
+        Abex.Tracker.add_experiment(conn, experiment)
+    end
   end
 end
