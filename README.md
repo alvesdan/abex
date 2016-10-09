@@ -1,6 +1,6 @@
-# Abex
+# A/B.ex
 
-**TODO: Add description**
+A Plug A/B test framework aiming to be fast, reliable and scalable. This is a work in progress project and design changes are expected.
 
 ## Installation
 
