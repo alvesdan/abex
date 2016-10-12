@@ -72,4 +72,22 @@ defmodule Abex.APITest do
       assert tracked[:tracked_at]
     end
   end
+
+  describe "Abex.API.get_variant/2" do
+    setup do
+      create_test_experiments
+    end
+
+    test "it returns experiment variant" do
+      conn =
+        fresh_conn
+        |> Abex.API.track_experiment("two_variants_experiment")
+
+      assert Abex.API.get_variant(conn, "two_variants_experiment")
+    end
+
+    test "when experiment is not tracked it returns nil" do
+      refute Abex.API.get_variant(fresh_conn, "two_variants_experiment")
+    end
+  end
 end

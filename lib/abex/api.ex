@@ -33,4 +33,10 @@ defmodule Abex.API do
         Abex.Tracker.add_experiment(conn, experiment)
     end
   end
+
+  @spec get_variant(Conn.t, binary) :: integer | nil
+  def get_variant(conn, experiment_tag) do
+    experiment = Abex.Experiment.retrieve(experiment_tag)
+    get_in(conn.private, [:abex_experiments, experiment.id, :variant])
+  end
 end
