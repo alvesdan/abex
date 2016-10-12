@@ -3,7 +3,7 @@ defmodule Abex.Seed do
   defstruct [:key, :experiments]
 
   @type key :: String.t
-  @type experiments :: %{ binary => any }
+  @type experiments :: %{ integer => map }
   @type t :: %__MODULE__{ key: key, experiments: experiments }
 
   def create, do: create(UUID.uuid1)

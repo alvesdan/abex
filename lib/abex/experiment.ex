@@ -3,6 +3,7 @@ defmodule Abex.Experiment do
   @derive [Poison.Encoder]
   defstruct [
     id: nil,
+    binary_id: nil,
     tag: nil,
     variants: [0, 1],
     status: :created
@@ -10,6 +11,7 @@ defmodule Abex.Experiment do
 
   @type t :: %__MODULE__{
     id: integer,
+    binary_id: binary,
     tag: binary,
     variants: list,
     status: atom
@@ -58,6 +60,7 @@ defmodule Abex.Experiment do
   defp transform(data) when is_map(data) do
     %__MODULE__{
       id: data.id,
+      binary_id: to_string(data.id),
       tag: data.tag,
       variants: variants(data.variants),
       status: data.status

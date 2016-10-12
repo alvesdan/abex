@@ -6,7 +6,7 @@ defmodule Abex.Tracker do
 
   @spec experiment_tracked?(Experiment.t, Conn.t) :: :tracked | {:not_tracked, Experiment.t}
   def experiment_tracked?(experiment, conn) do
-    if get_in(conn.private, [@experiments_key, experiment.id]),
+    if get_in(conn.private, [@experiments_key, experiment.binary_id]),
       do: :tracked,
       else: {:not_tracked, experiment}
   end
@@ -28,10 +28,10 @@ defmodule Abex.Tracker do
     experiments =
       conn
       |> Conn.get_experiments
-      |> Map.put_new(experiment.id,
+      |> Map.put_new(experiment.binary_id,
         %{
-          variant: Enum.random(experiment.variants),
-          tracked_at: unix_time
+          "variant" => Enum.random(experiment.variants),
+          "tracked_at" => unix_time
         })
 
     Plug.Conn.put_private(conn, @experiments_key, experiments)
@@ -42,7 +42,7 @@ defmodule Abex.Tracker do
   defp add_tracked_experiment(conn, experiment) do
     experiments =
       Map.get(conn.private, @tracked_experiments_key, [])
-      |> Enum.concat([experiment.id])
+      |> Enum.concat([experiment.binary_id])
       |> Enum.uniq
 
     Plug.Conn.put_private(conn, @tracked_experiments_key, experiments)

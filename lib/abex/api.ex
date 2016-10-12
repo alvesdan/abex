@@ -37,6 +37,6 @@ defmodule Abex.API do
   @spec get_variant(Conn.t, binary) :: integer | nil
   def get_variant(conn, experiment_tag) do
     experiment = Abex.Experiment.retrieve(experiment_tag)
-    get_in(conn.private, [:abex_experiments, experiment.id, :variant])
+    get_in(conn.private, [:abex_experiments, experiment.binary_id, "variant"])
   end
 end

@@ -66,10 +66,10 @@ defmodule Abex.APITest do
         |> Abex.API.track_experiment(experiment.tag)
 
       assert conn.private[:abex_experiments]
-      tracked = conn.private[:abex_experiments][experiment.id]
+      tracked = conn.private[:abex_experiments][experiment.binary_id]
 
-      assert tracked[:variant]
-      assert tracked[:tracked_at]
+      assert tracked["variant"]
+      assert tracked["tracked_at"]
     end
   end
 

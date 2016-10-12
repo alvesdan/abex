@@ -18,7 +18,7 @@ defmodule Abex.TrackerTest do
       experiment = context[:two_variants_experiment]
       conn =
         fresh_conn
-        |> Plug.Conn.put_private(:abex_experiments, %{experiment.id => 1})
+        |> Plug.Conn.put_private(:abex_experiments, %{experiment.binary_id => 1})
 
       assert Abex.Tracker.experiment_tracked?(experiment, conn) == :tracked
     end
@@ -31,8 +31,8 @@ defmodule Abex.TrackerTest do
         fresh_conn
         |> Abex.Tracker.add_experiment(experiment)
 
-      assert conn.private[:abex_experiments][experiment.id][:variant]
-      assert conn.private[:abex_experiments][experiment.id][:tracked_at]
+      assert conn.private[:abex_experiments][experiment.binary_id]["variant"]
+      assert conn.private[:abex_experiments][experiment.binary_id]["tracked_at"]
     end
 
     test "it adds the tracked experiment id", context do
@@ -41,7 +41,7 @@ defmodule Abex.TrackerTest do
         fresh_conn
         |> Abex.Tracker.add_experiment(experiment)
 
-      assert conn.private[:abex_tracked_experiments] == [experiment.id]
+      assert conn.private[:abex_tracked_experiments] == [experiment.binary_id]
     end
   end
 end
